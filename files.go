@@ -271,7 +271,6 @@ func HandleDeleteFile(resp http.ResponseWriter, request *http.Request) {
 		}
 	}
 
-
 	var fileId string
 	location := strings.Split(request.URL.String(), "/")
 	if location[1] == "api" {
@@ -397,7 +396,7 @@ func HandleDeleteFile(resp http.ResponseWriter, request *http.Request) {
 			resp.Write([]byte(`{"success": false, "reason": "Failed setting file to deleted"}`))
 			return
 		}
-	
+
 		outputFiles, err := FindSimilarFile(ctx, file.Md5sum, file.OrgId)
 		log.Printf("[INFO] Found %d similar files for Md5 '%s'", len(outputFiles), file.Md5sum)
 		if len(outputFiles) > 0 {
@@ -409,7 +408,7 @@ func HandleDeleteFile(resp http.ResponseWriter, request *http.Request) {
 				}
 			}
 		}
-	
+
 		nameKey := "Files"
 		DeleteCache(ctx, fmt.Sprintf("%s_%s_%s", nameKey, file.OrgId, file.Md5sum))
 		DeleteCache(ctx, fmt.Sprintf("%s_%s", nameKey, file.OrgId))
@@ -448,7 +447,7 @@ func LoadStandardFromGithub(client *github.Client, owner, repo, path, filename s
 				return files, nil
 			}
 		}
-	} 
+	}
 
 	if len(files) == 0 {
 		_, files, _, err = client.Repositories.GetContents(ctx, owner, repo, path, nil)
@@ -488,7 +487,7 @@ func LoadStandardFromGithub(client *github.Client, owner, repo, path, filename s
 			log.Printf("[WARNING] Failed setting cache for getfiles on github '%s': %s", cacheKey, err)
 		}
 	}
-  
+
 	return files, nil
 }
 
@@ -539,7 +538,7 @@ func HandleGetFileNamespace(resp http.ResponseWriter, request *http.Request) {
 		user.Username = "Execution File API"
 	}
 
-	if len(user.Username) > 0 && len(user.Id) > 0 { 
+	if len(user.Username) > 0 && len(user.Id) > 0 {
 		log.Printf("[AUDIT] User '%s' (%s) is trying to get files from namespace %#v", user.Username, user.Id, namespace)
 	}
 
@@ -630,7 +629,7 @@ func HandleGetFileNamespace(resp http.ResponseWriter, request *http.Request) {
 		"translation_input",
 		"translation_output",
 		"translation_standards",
-		"translation_ai_queries", 
+		"translation_ai_queries",
 
 		"detections",
 	}
@@ -642,7 +641,7 @@ func HandleGetFileNamespace(resp http.ResponseWriter, request *http.Request) {
 	if filenameOk && ArrayContains(reservedCategoryNames, namespace) {
 		//log.Printf("[DEBUG] Filename '%s' in URL with reserved category name: %s. Listlength: %d", filename[0], namespace, len(fileResponse.List))
 
-		// Load from Github repo https://github.com/Shashankgupta200/Soar/tree/main/standards
+		// Load from Github repo https://github.com/Shashankgupta200/standards
 		filenameFound := false
 		parsedFilename := strings.TrimSpace(strings.Replace(strings.ToLower(filename[0]), " ", "_", -1))
 		if strings.HasSuffix(parsedFilename, ".json") {
@@ -697,8 +696,8 @@ func HandleGetFileNamespace(resp http.ResponseWriter, request *http.Request) {
 					//log.Printf("[DEBUG] Decoded Github file '%s' with content:\n%s", *item.Path, string(decoded))
 
 					timeNow := time.Now().Unix()
-					fileId := "file_"+uuid.NewV4().String()
-	
+					fileId := "file_" + uuid.NewV4().String()
+
 					folderPath := fmt.Sprintf("%s/%s/%s", basepath, user.ActiveOrg.Id, "global")
 					downloadPath := fmt.Sprintf("%s/%s", folderPath, fileId)
 					file := File{
@@ -714,7 +713,7 @@ func HandleGetFileNamespace(resp http.ResponseWriter, request *http.Request) {
 						Subflows:     []string{},
 						StorageArea:  "local",
 						Namespace:    namespace,
-						Tags:         []string{
+						Tags: []string{
 							"standard",
 						},
 					}
@@ -745,13 +744,13 @@ func HandleGetFileNamespace(resp http.ResponseWriter, request *http.Request) {
 					log.Printf("[DEBUG] Uploaded file %#v with ID %s in category %#v", file.Filename, fileId, namespace)
 
 					fileResponse.List = append(fileResponse.List, BaseFile{
-						Name: file.Filename,
-						ID:   fileId,
-						Type: file.Type,
+						Name:      file.Filename,
+						ID:        fileId,
+						Type:      file.Type,
 						UpdatedAt: file.UpdatedAt,
-						Md5Sum: file.Md5sum,
-						Status: file.Status,
-						FileSize: file.FileSize,
+						Md5Sum:    file.Md5sum,
+						Status:    file.Status,
+						FileSize:  file.FileSize,
 					})
 				}
 			}
@@ -916,7 +915,7 @@ func HandleGetFileContent(resp http.ResponseWriter, request *http.Request) {
 	}
 
 	// Automatically downloads and returns the file through resp
-	// GetFileContent() is used to return data, through resp if possible due to how we used to do it. 
+	// GetFileContent() is used to return data, through resp if possible due to how we used to do it.
 
 	if len(file.OrgId) == 0 {
 		file.OrgId = user.ActiveOrg.Id
@@ -982,7 +981,6 @@ func GetFileContent(ctx context.Context, file *File, resp http.ResponseWriter) (
 				}
 			}
 
-
 			// FIXME:
 			// Editing in the following order fails:
 			// url -> apikey
@@ -990,7 +988,7 @@ func GetFileContent(ctx context.Context, file *File, resp http.ResponseWriter) (
 			// Editing in the following order works:
 			// apikey -> url
 
-			// This means apikey should be the reference file ID? 
+			// This means apikey should be the reference file ID?
 			// Problem: It shouldn't edit ALL files when one out of many are edited.
 
 			//log.Printf("[DEBUG] MD5: %s, Original MD5:", file.Md5sum, file.OriginalMd5sum)
@@ -1310,8 +1308,8 @@ func HandleUploadFile(resp http.ResponseWriter, request *http.Request) {
 		fileId = location[4]
 	}
 
-	//if len(fileId) != 36 && 
-	if !strings.HasPrefix(fileId, "file_") || len(fileId) > 64 { 
+	//if len(fileId) != 36 &&
+	if !strings.HasPrefix(fileId, "file_") || len(fileId) > 64 {
 		log.Printf("[WARNING] Bad format for fileId %s", fileId)
 		resp.WriteHeader(401)
 		resp.Write([]byte(`{"success": false, "reason": "Badly formatted fileId"}`))
@@ -1443,7 +1441,7 @@ func HandleUploadFile(resp http.ResponseWriter, request *http.Request) {
 	}
 
 	log.Printf("[INFO] Successfully uploaded file ID %s", file.Id)
-  
+
 	if file.Namespace == "sigma" {
 		execType := "CATEGORY_UPDATE"
 		err = SetDetectionOrborusRequest(ctx, user.ActiveOrg.Id, execType, file.Filename, "SIGMA", "SOAR_DISCOVER")
@@ -1467,7 +1465,7 @@ func UploadFile(ctx context.Context, file *File, encryptionKey string, contents 
 	outputFiles, err := FindSimilarFile(ctx, md5, file.OrgId)
 	if len(outputFiles) > 0 {
 		outputFile := outputFiles[0]
-		if debug { 
+		if debug {
 			log.Printf("[DEBUG] Already found a file with the same Md5 '%s' for org '%s' in ID: %s. Referencing same location.", md5, file.OrgId, outputFile.Id)
 		}
 
@@ -1654,7 +1652,7 @@ func HandleCreateFile(resp http.ResponseWriter, request *http.Request) {
 		curfile.WorkflowId = "global"
 		// PS: Not a security issue.
 		// Files are global anyway, but the workflow_id is used to identify origin
-		if debug { 
+		if debug {
 			log.Printf("[DEBUG] Uploading filename %s for org %s as global file in namespace '%s'.", curfile.Filename, curfile.OrgId, curfile.Namespace)
 		}
 	} else {
@@ -1680,12 +1678,13 @@ func HandleCreateFile(resp http.ResponseWriter, request *http.Request) {
 
 			log.Printf("[DEBUG] Workflow executing org (%s) isn't file Org Id (%s) in file create. %d orgs have access to it.", workflow.ExecutingOrg.Id, curfile.OrgId, len(workflow.Org))
 			if len(workflow.Org) == 0 && len(executionId) > 0 {
-					log.Printf("[DEBUG] Trying to get workflow from execution %s and no orgs are set (workflow probably is deleted!)", executionId)
-					execution, err := GetWorkflowExecution(ctx, executionId)
-					if err != nil {
-						log.Printf("[ERROR] Execution %s doesn't exist.", executionId)
-					} else if (curfile.OrgId == execution.OrgId) && (curfile.WorkflowId == execution.WorkflowId) {{
-							found = true
+				log.Printf("[DEBUG] Trying to get workflow from execution %s and no orgs are set (workflow probably is deleted!)", executionId)
+				execution, err := GetWorkflowExecution(ctx, executionId)
+				if err != nil {
+					log.Printf("[ERROR] Execution %s doesn't exist.", executionId)
+				} else if (curfile.OrgId == execution.OrgId) && (curfile.WorkflowId == execution.WorkflowId) {
+					{
+						found = true
 					}
 				}
 			} else {
@@ -1732,7 +1731,6 @@ func HandleCreateFile(resp http.ResponseWriter, request *http.Request) {
 		}
 	}
 
-
 	// Check if the file already exists in the category if unique=true is set
 	// If it does, we should just return the file ID in the {success: true, id: "file_id"} json format
 	unique, uniqueOk := request.URL.Query()["unique"]
@@ -1755,7 +1753,6 @@ func HandleCreateFile(resp http.ResponseWriter, request *http.Request) {
 
 		}
 	}
-
 
 	filename := curfile.Filename
 	fileId := fmt.Sprintf("file_%s", uuid.NewV4().String())
@@ -1815,7 +1812,7 @@ func HandleCreateFile(resp http.ResponseWriter, request *http.Request) {
 		resp.Write([]byte(`{"success": false, "reason": "Failed setting file reference"}`))
 		return
 	} else {
-		if debug { 
+		if debug {
 			log.Printf("[DEBUG] Created file %s with namespace %#v", newFile.DownloadPath, newFile.Namespace)
 		}
 	}
@@ -1862,7 +1859,7 @@ func HandleDownloadRemoteFiles(resp http.ResponseWriter, request *http.Request) 
 		Field1 string `json:"field_1"` // Username
 		Field2 string `json:"field_2"` // Password
 		Field3 string `json:"field_3"` // Branch
-		Path  string `json:"path"` 
+		Path   string `json:"path"`
 	}
 
 	var input tmpStruct
@@ -1874,7 +1871,7 @@ func HandleDownloadRemoteFiles(resp http.ResponseWriter, request *http.Request) 
 		return
 	}
 
-	// Find from the input.URL 
+	// Find from the input.URL
 	client := github.NewClient(nil)
 	urlSplit := strings.Split(input.URL, "/")
 	if len(urlSplit) < 5 {
@@ -1889,7 +1886,7 @@ func HandleDownloadRemoteFiles(resp http.ResponseWriter, request *http.Request) 
 	repo := ""
 	path := input.Path
 
-	for cnt, item := range urlSplit[3:] { 
+	for cnt, item := range urlSplit[3:] {
 		if cnt == 0 {
 			owner = item
 		} else if cnt == 1 {
@@ -1898,7 +1895,7 @@ func HandleDownloadRemoteFiles(resp http.ResponseWriter, request *http.Request) 
 	}
 
 	log.Printf("[DEBUG] Loading standard with git: %s/%s/%s", owner, repo, path)
-	files, err := LoadStandardFromGithub(client, owner, repo, path, "") 
+	files, err := LoadStandardFromGithub(client, owner, repo, path, "")
 	if err != nil {
 		log.Printf("[DEBUG] Failed to load standard from github: %s", err)
 		resp.WriteHeader(400)
@@ -1945,7 +1942,7 @@ func HandleDownloadRemoteFiles(resp http.ResponseWriter, request *http.Request) 
 			Subflows:     []string{},
 			StorageArea:  "local",
 			Namespace:    path,
-			Tags:         []string{
+			Tags: []string{
 				"standard",
 			},
 		}
@@ -1975,7 +1972,6 @@ func HandleDownloadRemoteFiles(resp http.ResponseWriter, request *http.Request) 
 
 		log.Printf("[DEBUG] Uploaded file %s with ID %s in category %#v", file.Filename, fileId, path)
 	}
-
 
 	resp.WriteHeader(200)
 	resp.Write([]byte(fmt.Sprintf(`{"success": true}`)))

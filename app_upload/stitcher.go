@@ -1,14 +1,13 @@
 package main
 
-// This is intended to upload apps from https://github.com/Shashankgupta200/Soar/tree/main/python-apps to the cloud instance of soar (https://soarr.io). It does so by looping and finding all the apps, building the code with the SDK, and serving it as a Cloud Function.
+// This is intended to upload apps from https://github.com/Shashankgupta200/python-apps to the cloud instance of soar (https://soarr.io). It does so by looping and finding all the apps, building the code with the SDK, and serving it as a Cloud Function.
 
 // This can be used to update normal apps, but app-creator apps should be updated by the shaffuru/functions/cloud_scripts/update_functions.go script in case there is a new App SDK.
 
 import (
-	"github.com/Shashankgupta200/Soar/tree/main/soar-shared"
+	"github.com/Shashankgupta200/soar-shared"
 
 	"archive/zip"
-	"runtime"
 	"bytes"
 	"context"
 	"crypto/md5"
@@ -23,6 +22,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
@@ -446,7 +446,7 @@ func deployFunction(appname, localization, applocation string, environmentVariab
 		log.Println("[WARNING] Failed creating new function. Attempting patch, as it might exist already")
 
 		// Get the function
-		// Then replicate environment variables, maxinstance & memory 
+		// Then replicate environment variables, maxinstance & memory
 		getcall := projectsLocationsFunctionsService.Get(fmt.Sprintf("%s/functions/%s", location, appname))
 		existingFunction, err := getcall.Do()
 		if err != nil {
@@ -469,7 +469,6 @@ func deployFunction(appname, localization, applocation string, environmentVariab
 				cloudFunction.AvailableMemoryMb = existingFunction.AvailableMemoryMb
 			}
 		}
-
 
 		patchCall := projectsLocationsFunctionsService.Patch(fmt.Sprintf("%s/functions/%s", location, appname), cloudFunction)
 		_, err = patchCall.Do()
@@ -581,7 +580,6 @@ func loadYaml(fileLocation string) (soar.WorkflowApp, error) {
 	return action, nil
 }
 
-
 // Deploys to backend (YAML config)
 func deployConfigToBackend(basefolder, appname, appversion string) error {
 	location := fmt.Sprintf("%s/%s/%s/api.yaml", basefolder, appname, appversion)
@@ -646,7 +644,7 @@ func deployConfigToBackend(basefolder, appname, appversion string) error {
 		storageclient, err := storage.NewClient(ctx)
 		if err != nil {
 			log.Printf("[ERROR] Failed to create client: %v", err)
-			return nil 
+			return nil
 		}
 
 		bucket := storageclient.Bucket(bucketName)
@@ -922,8 +920,8 @@ func sendRebuildRequest(imageName string) {
 
 	client := &http.Client{}
 	req, err := http.NewRequest(
-		http.MethodPost, 
-		url, 
+		http.MethodPost,
+		url,
 		nil,
 	)
 
@@ -946,7 +944,7 @@ func sendRebuildRequest(imageName string) {
 func main() {
 	//addRequirements("generated_apps/soar-tools_1.0.0/requirements.txt")
 	if len(os.Args) < 3 {
-		log.Printf("[WARNING] Missing arguments. <> are NOT required. Input: go run stitcher.go APIKEY URL <GCEPROJECT> <GCE_REGION> <BUCKETNAME>\n\n\nSample: go run stitcher.go APIKEY https://ca.soarr.io soar-na-northeast1 northamerica-northeast1 soar_org_files_na_northeast1") 
+		log.Printf("[WARNING] Missing arguments. <> are NOT required. Input: go run stitcher.go APIKEY URL <GCEPROJECT> <GCE_REGION> <BUCKETNAME>\n\n\nSample: go run stitcher.go APIKEY https://ca.soarr.io soar-na-northeast1 northamerica-northeast1 soar_org_files_na_northeast1")
 		return
 	}
 
@@ -968,7 +966,7 @@ func main() {
 		appbasefile = strings.Replace(appbasefile, "/home/", "/Users/", -1)
 		appfolder = strings.Replace(appfolder, "/home/", "/Users/", -1)
 	}
-	
+
 	if strings.Contains(appbasefile, "$USER") || strings.Contains(appfolder, "$USER") {
 		log.Printf("[INFO] Replacing $USER with current user in paths")
 		currentUser, err := user.Current()
